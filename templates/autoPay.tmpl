@@ -1,0 +1,95 @@
+<!doctype html>
+<html class="no-js">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="description" content="">
+    <meta name="keywords" content="">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <title>{{ .title }}</title>
+    <meta name="renderer" content="webkit">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0/css/bootstrap.min.css"
+          integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <link href="//netdna.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <style>
+        .pay {
+            width: 100%;
+            height: 2rem;
+            background-color: #FF5722;
+            color: #ffffff;
+            text-align: center;
+            line-height: 2rem;
+            border-radius: 1rem;
+        }
+
+        .pay_show {
+            display: flex;
+            justify-content: space-around;
+        }
+
+        .pay_show div{
+            width: 50%;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<div>为了实现企业打款，需要连续不间断90天的微信支付业务往来。所以需要每天支付1分-1元。点击下方按钮进行支付</div>
+<div class="pay" onclick="pay()">支付(0.01-1)元</div>
+<div style="text-align: center">--记录--</div>
+<div class="pay_show">
+    <div>金额（元）</div>
+    <div>支付时间</div>
+</div>
+{{range .list}}
+    <div class="pay_show">
+        <div>{{.Fees}}</div>
+        <div>{{.PayTimes}}</div>
+    </div>
+{{end}}
+
+
+<script src="http://res.wx.qq.com/open/js/jweixin-1.6.0.js" type="text/javascript" charset="utf-8"></script>
+<script>
+    // 配置必须有
+    wx.config({
+        debug: false,
+        appId: '{{ .appId }}',
+        timestamp: '{{ .timestamp }}',
+        nonceStr: '{{ .nonceStr }}',
+        signature: '{{ .signature }}',
+        jsApiList: ['chooseWXPay']
+    });
+</script>
+<script>
+    function pay() {
+        // 防止重复点击~
+        if ($(".pay").html()=="支付中..."){
+            alert("支付中");
+            return false;
+        }
+        $(".pay").html("支付中...");
+
+        $.post('/letusgo/pay', {id: "{{ .openId }}"}, function (data) {
+            console.log(data);
+            wx.chooseWXPay({
+                timestamp: parseInt(data.timestamp),
+                nonceStr: data.nonceStr,
+                package: data.package_str,
+                signType: data.signType,
+                paySign: data.paySign, // 支付签名
+                success: function (res) {
+                    // 支付成功后的回调函数
+                    //刷新页面
+                    window.location.href = window.location.href;
+                }
+            });
+        })
+
+    }
+</script>
+
+</body>
+</html>
