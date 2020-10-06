@@ -75,7 +75,7 @@ func (AutoOrder) TableName() string {
 // to grant authorization
 type Ga struct {
 	gorm.Model
-	Openid   string
+	Openid   string `gorm:"unique"`//唯一
 	Userinfo string `gorm:"size:2000"`
 }
 
